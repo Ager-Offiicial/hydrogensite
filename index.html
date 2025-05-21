@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydrogen - Premium AI Coding Agent for Your Terminal</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500;700&family=Orbitron:wght@700&family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-color: #121212; /* Even darker base */
+            --bg-secondary-color: #1e1e1e; /* Slightly lighter for cards/sections */
+            --primary-color: #00bfff; /* Deep Sky Blue - vibrant */
+            --accent-color: #ff3b30; /* Bright Red/Orange for strong CTAs or highlights */
+            --text-color: #f0f0f0;
+            --text-muted-color: #b0b0b0;
+            --success-color: #34c759; /* iOS Green */
+            --border-color: #333333;
+            --border-radius: 10px;
+            --font-body: 'Inter', sans-serif;
+            --font-code: 'Roboto Mono', monospace;
+            --font-display: 'Orbitron', sans-serif;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-display);
+            color: var(--primary-color);
+            margin-bottom: 0.7em;
+            letter-spacing: 0.5px;
+        }
+
+        h1 { font-size: 2.8rem; line-height: 1.2; text-shadow: 0 0 15px rgba(0, 191, 255, 0.3); }
+        h2 { font-size: 2.2rem; text-align: center; }
+        h3 { font-size: 1.6rem; color: var(--text-color); } /* General h3 is lighter */
+        h4 { font-size: 1.2rem; color: var(--primary-color); }
+
+        p {
+            margin-bottom: 1.2em;
+            font-size: 1rem;
+            color: var(--text-muted-color);
+        }
+        p strong { color: var(--text-color); }
+
+        a {
+            text-decoration: none;
+            color: var(--primary-color);
+            transition: color 0.3s ease, filter 0.3s ease;
+        }
+        a:hover {
+            color: var(--accent-color);
+            filter: brightness(1.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: #fff !important; /* Ensure text is white */
+            border-radius: 50px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0, 191, 255, 0.4);
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+        }
+        .btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 25px rgba(255, 59, 48, 0.5);
+            filter: brightness(1.15);
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color) !important;
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            color: var(--bg-color) !important;
+            box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+        }
+        .btn i { margin-right: 8px; }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background-color: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            padding: 1rem 0;
+        }
+        .navbar .container { display: flex; justify-content: space-between; align-items: center; }
+        .navbar .logo { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--primary-color); }
+        .nav-links { list-style: none; display: flex; }
+        .nav-links li { margin-left: 28px; }
+        .nav-links a { font-weight: 500; font-size: 0.95rem; padding-bottom: 5px; position: relative; }
+        .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background-color: var(--accent-color); transition: width 0.3s ease; }
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+
+        /* Hero Section */
+        .hero {
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            padding-top: 100px; /* Account for fixed navbar */
+            background: var(--bg-color) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1000" height="1000"><defs><filter id="f" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="10" result="blur"/><feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" seed="0" result="noise"/><feDiffuseLighting in="noise" lighting-color="%2300bfff" surfaceScale="2" result="diffuse"><feDistantLight azimuth="45" elevation="60"/></feDiffuseLighting><feComposite in="diffuse" in2="blur" operator="in" result="comp"/><feMerge><feMergeNode in="comp"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect width="100%" height="100%" filter="url(%23f)" fill-opacity="0.05"/></svg>') center/cover no-repeat;
+        }
+        .hero-content { z-index: 1; max-width: 680px; }
+        .hero h1 { font-size: 3rem; margin-bottom: 0.5em; }
+        .hero h1 .highlight { color: var(--accent-color); text-shadow: 0 0 10px var(--accent-color); }
+        .hero p.subtitle { font-size: 1.15rem; margin-bottom: 1.8em; max-width: 600px; color: var(--text-color); line-height: 1.8; }
+        .hero-buttons .btn { margin-right: 15px; margin-bottom: 10px; }
+
+        /* General Section Styling */
+        section { padding: 80px 0; }
+        .section-bg { background-color: var(--bg-secondary-color); }
+        .section-title h2 { margin-bottom: 20px; }
+        .section-title h2::after { content: ''; display: block; width: 70px; height: 3px; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); margin: 15px auto 0; border-radius: 2px; }
+        .section-title p { max-width: 700px; margin: 0 auto 40px auto; text-align: center; color: var(--text-muted-color); }
+
+        /* Features Section */
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
+        .feature-card { background-color: var(--bg-secondary-color); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow-light); border-left: 4px solid var(--primary-color); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 12px 25px rgba(0,0,0,0.4); }
+        .feature-card .icon { font-size: 2.2rem; color: var(--primary-color); margin-bottom: 15px; display: inline-block; }
+        .feature-card h3 { color: var(--primary-color); font-size: 1.3rem; margin-bottom: 10px; }
+
+        /* Why Pay Section */
+        #why-pay .value-prop { margin-bottom: 25px; display: flex; align-items: flex-start; }
+        #why-pay .value-prop .icon { font-size: 1.8rem; color: var(--success-color); margin-right: 15px; margin-top: 5px; }
+        #why-pay .value-prop h4 { margin-bottom: 5px; color: var(--text-color); }
+
+        /* Demo Section - Enhanced Terminal */
+        .terminal-demo-container { background-color: #0D1117; border-radius: var(--border-radius); padding: 25px; box-shadow: var(--shadow); max-width: 800px; margin: 40px auto 0; border: 1px solid var(--border-color); position: relative; }
+        .terminal-header { display: flex; align-items: center; margin-bottom: 15px; }
+        .terminal-header .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
+        .terminal-header .dot.red { background-color: #FF5F56; }
+        .terminal-header .dot.yellow { background-color: #FFBD2E; }
+        .terminal-header .dot.green { background-color: #27C93F; }
+        .terminal-title { color: #ccc; font-size: 0.9rem; margin-left: auto; font-family: var(--font-code); }
+        .terminal-body { font-family: var(--font-code); font-size: 0.9rem; line-height: 1.8; min-height: 350px; max-height: 500px; overflow-y: auto; }
+        .terminal-body pre { white-space: pre-wrap; word-wrap: break-word; }
+        .terminal-line { display: block; margin-bottom: 5px; }
+        .terminal-line .prompt { color: var(--success-color); }
+        .terminal-line .command { color: var(--text-color); }
+        .terminal-line .output-hydrogen { color: var(--primary-color); }
+        .terminal-line .output-code, .terminal-line .output-diff { color: #C9D1D9; }
+        .terminal-line .output-comment { color: #8B949E; }
+        .terminal-line .output-keyword { color: #ff7b72; }
+        .terminal-line .output-string { color: #a5d6ff; }
+        .terminal-line .diff-add { color: var(--success-color); }
+        .terminal-line .diff-remove { color: var(--accent-color); }
+        .typed-cursor { display: inline-block; width: 8px; height: 1.2em; background-color: var(--text-color); animation: blink 1s infinite; vertical-align: middle;}
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Pricing Section */
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px; align-items: stretch; }
+        .pricing-card { background-color: var(--bg-secondary-color); padding: 35px; border-radius: var(--border-radius); box-shadow: var(--shadow-light); text-align: center; display: flex; flex-direction: column; justify-content: space-between; border: 2px solid var(--border-color); transition: transform 0.3s ease, border-color 0.3s ease; }
+        .pricing-card:hover { transform: translateY(-10px); border-color: var(--primary-color); }
+        .pricing-card.popular { border-color: var(--accent-color); position: relative; }
+        .pricing-card.popular::before { content: 'BEST VALUE'; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.5px; }
+        .pricing-card h3 { color: var(--primary-color); font-size: 1.5rem; margin-bottom: 10px; }
+        .pricing-card .price { font-size: 2.8rem; font-weight: 700; color: var(--text-color); margin: 15px 0; }
+        .pricing-card .price span { font-size: 1rem; color: var(--text-muted-color); }
+        .pricing-card ul { list-style: none; margin: 25px 0; text-align: left; }
+        .pricing-card ul li { margin-bottom: 12px; color: var(--text-muted-color); display: flex; align-items: center; }
+        .pricing-card ul li i { color: var(--success-color); margin-right: 10px; font-size: 1.1rem; }
+        .pricing-card .btn { margin-top: auto; width: 100%; }
+
+        /* Testimonials Section */
+        #testimonials { background-color: var(--bg-secondary-color); }
+        .testimonial-card { background-color: var(--bg-color); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow-light); margin-bottom: 20px; }
+        .testimonial-card blockquote { font-style: italic; font-size: 1.1rem; margin-bottom: 15px; color: var(--text-color); }
+        .testimonial-card cite { font-weight: bold; color: var(--primary-color); display: block; text-align: right; }
+        /* Simple slider (can be enhanced with JS if many testimonials) */
+        .testimonial-slider { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;}
+
+        /* FAQ Section */
+        .faq-item { background-color: var(--bg-secondary-color); margin-bottom: 15px; border-radius: var(--border-radius); }
+        .faq-question { padding: 20px; font-weight: 600; color: var(--primary-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-question::after { content: '+'; font-size: 1.5rem; transition: transform 0.3s ease; }
+        .faq-answer { padding: 0 20px 20px; max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; color: var(--text-muted-color); }
+        .faq-item.active .faq-question::after { transform: rotate(45deg); }
+        .faq-item.active .faq-answer { max-height: 300px; /* Adjust as needed */ }
+
+        /* Footer */
+        .footer { background-color: var(--bg-color); border-top: 1px solid var(--border-color); color: var(--text-muted-color); text-align: center; padding: 40px 0; font-size: 0.9rem; }
+        .footer .logo { font-family: var(--font-display); color: var(--primary-color); font-size: 1.5rem; margin-bottom: 10px; display: block; }
+        .footer p { margin-bottom: 8px; }
+        .footer a { color: var(--primary-color); }
+        .footer a:hover { color: var(--accent-color); }
+        .footer-links { margin-top:15px; }
+        .footer-links a { margin: 0 10px; }
+
+        /* Animations on scroll */
+        .animate-on-scroll { opacity: 0; transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
+        .is-visible { opacity: 1 !important; }
+        .fade-in-up { transform: translateY(40px); }
+        .fade-in-up.is-visible { transform: translateY(0); }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            h1 { font-size: 2.5rem; }
+            .hero h1 { font-size: 2.6rem; }
+            .hero p.subtitle { font-size: 1.05rem; }
+            .pricing-grid { grid-template-columns: 1fr; } /* Stack pricing cards */
+        }
+        @media (max-width: 768px) {
+            .navbar .container { flex-direction: column; }
+            .nav-links { margin-top: 15px; }
+            .nav-links li { margin: 0 10px; }
+            .hero { text-align: center; padding-top: 120px; }
+            .hero-content { margin: 0 auto; }
+            h1 { font-size: 2.2rem; } .hero h1 { font-size: 2.3rem; }
+            h2 { font-size: 1.8rem; }
+            .terminal-demo-container { padding: 15px; }
+            .terminal-body { font-size: 0.8rem; }
+        }
+    </style>
+    <!-- Font Awesome for icons (optional, but used here) -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous" async></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container">
+            <a href="#hero" class="logo">Hydrogen</a>
+            <ul class="nav-links">
+                <li><a href="#features" class="active">Features</a></li>
+                <li><a href="#demo">Demo</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="mailto:your-support-email@example.com">Support</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content animate-on-scroll fade-in-up">
+                <h1>The <span class="highlight">Future</span> of Terminal-Based Coding is Here.</h1>
+                <p class="subtitle">Stop context-switching. Start coding smarter. Hydrogen is your premium AI co-pilot, seamlessly integrated into your terminal, supercharging your workflow with intelligent assistance, offline power, and full control.</p>
+                <div class="hero-buttons">
+                    <a href="#pricing" class="btn"><i class="fas fa-rocket"></i> Get Hydrogen Now</a>
+                    <a href="#demo" class="btn btn-secondary"><i class="fas fa-eye"></i> See it in Action</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="why-pay" class="section-bg">
+        <div class="container">
+            <div class="section-title animate-on-scroll fade-in-up">
+                <h2>Why Invest in Hydrogen?</h2>
+                <p>Hydrogen isn't just another tool; it's a productivity multiplier designed for serious developers.</p>
+            </div>
+            <div class="features-grid">
+                 <div class="value-prop animate-on-scroll fade-in-up" style="transition-delay: 0.1s;">
+                    <span class="icon"><i class="fas fa-bolt"></i></span>
+                    <div>
+                        <h4>Unmatched Efficiency</h4>
+                        <p>Automate repetitive tasks, generate complex code, and refactor with AI speed. Get hours back every week.</p>
+                    </div>
+                </div>
+                <div class="value-prop animate-on-scroll fade-in-up" style="transition-delay: 0.2s;">
+                    <span class="icon"><i class="fas fa-shield-alt"></i></span>
+                    <div>
+                        <h4>Your Code Stays Yours</h4>
+                        <p>With Ollama integration, run powerful LLMs locally. Your proprietary code never leaves your machine, ensuring maximum privacy and security.</p>
+                    </div>
+                </div>
+                 <div class="value-prop animate-on-scroll fade-in-up" style="transition-delay: 0.3s;">
+                    <span class="icon"><i class="fas fa-brain"></i></span>
+                    <div>
+                        <h4>Deep Contextual Understanding</h4>
+                        <p>Hydrogen's Agent Mode proactively analyzes your project to offer truly relevant suggestions, unlike generic AI assistants.</p>
+                    </div>
+                </div>
+                <div class="value-prop animate-on-scroll fade-in-up" style="transition-delay: 0.4s;">
+                    <span class="icon"><i class="fas fa-arrows-alt-h"></i></span>
+                    <div>
+                        <h4>Seamless Workflow</h4>
+                        <p>Stay in your terminal, your natural coding habitat. No more disruptive app switching. Hydrogen integrates, not intrudes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="container">
+            <div class="section-title animate-on-scroll fade-in-up">
+                <h2>Core Features</h2>
+                <p>Packed with tools to elevate your command-line development experience.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card animate-on-scroll fade-in-up" style="transition-delay: 0.1s;">
+                    <span class="icon"><i class="fas fa-magic"></i></span>
+                    <h3>Intelligent Agent Mode</h3>
+                    <p>Go beyond simple Q&A. Hydrogen proactively analyzes, suggests file creations, commands, and code changes, always seeking your approval.</p>
+                </div>
+                <div class="feature-card animate-on-scroll fade-in-up" style="transition-delay: 0.2s;">
+                    <span class="icon"><i class="fas fa-plug-circle-xmark"></i></span>
+                    <h3>Offline Ollama Power</h3>
+                    <p>Run powerful local LLMs for complete privacy and offline work. Supports a wide range of models like Phi-3, Llama 3, Mistral, and more.</p>
+                </div>
+                <div class="feature-card animate-on-scroll fade-in-up" style="transition-delay: 0.3s;">
+                    <span class="icon"><i class="fas fa-code-branch"></i></span>
+                    <h3>Advanced Code Generation & Refactoring</h3>
+                    <p>Generate boilerplate, complex functions, unit tests, or refactor existing code with AI precision, right from your terminal.</p>
+                </div>
+                 <div class="feature-card animate-on-scroll fade-in-up" style="transition-delay: 0.4s;">
+                    <span class="icon"><i class="fas fa-terminal"></i></span>
+                    <h3>Native Terminal Experience</h3>
+                    <p>Feels like a natural extension of your shell. No new UI to learn. Works where you work.</p>
+                </div>
+                <div class="feature-card animate-on-scroll fade-in-up" style="transition-delay: 0.5s;">
+                    <span class="icon"><i class="fas fa-history"></i></span>
+                    <h3>Persistent Context</h3>
+                    <p>Remembers your conversation and project context for increasingly relevant and accurate assistance over time.</p>
+                </div>
+                <div class="feature-card animate-on-scroll fade-in-up" style="transition-delay: 0.6s;">
+                    <span class="icon"><i class="fas fa-cogs"></i></span>
+                    <h3>Customizable Models</h3>
+                    <p>Easily switch between different Ollama models to suit your specific task or preference for speed vs. capability.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="section-bg">
+        <div class="container">
+            <div class="section-title animate-on-scroll fade-in-up">
+                <h2>Hydrogen in Hyper-Drive</h2>
+                <p>Watch Hydrogen tackle a real-world coding task, showcasing its power and ease of use.</p>
+            </div>
+            <div class="terminal-demo-container animate-on-scroll fade-in-up">
+                <div class="terminal-header">
+                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                    <span class="terminal-title">zsh -- hydrogen</span>
+                </div>
+                <div class="terminal-body">
+                    <pre id="terminal-output"></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <div class="container">
+            <div class="section-title animate-on-scroll fade-in-up">
+                <h2>Choose Your Power Level</h2>
+                <p>Simple, transparent pricing to get you started with Hydrogen.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card animate-on-scroll fade-in-up" style="transition-delay: 0.1s;">
+                    <h3>Ignition License</h3>
+                    <div class="price">$2.99 <span>/ one-time</span></div>
+                    <p>Get the current version of Hydrogen and start boosting your productivity today.</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Full access to current version</li>
+                        <li><i class="fas fa-check-circle"></i> All core features included</li>
+                        <li><i class="fas fa-check-circle"></i> Offline Ollama support</li>
+                        <li><i class="fas fa-check-circle"></i> Community support</li>
+                        <li><i class="fas fa-times-circle" style="color: var(--text-muted-color);"></i> No future version upgrades</li>
+                    </ul>
+                    <a href="#" class="btn btn-secondary">Buy Ignition License</a>
+                </div>
+
+                <div class="pricing-card popular animate-on-scroll fade-in-up" style="transition-delay: 0.2s;">
+                    <h3>Fusion Subscription</h3>
+                    <div class="price">$1.99 <span>/ month</span></div>
+                    <p>Stay on the cutting-edge with all updates, new features, and priority support.</p>
+                    <ul>
+                        <li><i class="fas fa-check-circle"></i> Full access to current version</li>
+                        <li><i class="fas fa-check-circle"></i> All core features included</li>
+                        <li><i class="fas fa-check-circle"></i> Offline Ollama support</li>
+                        <li><i class="fas fa-check-circle"></i> **Continuous updates & new features**</li>
+                        <li><i class="fas fa-check-circle"></i> **Priority email support**</li>
+                        <li><i class="fas fa-check-circle"></i> Cancel anytime</li>
+                    </ul>
+                    <a href="#" class="btn">Start Fusion Subscription</a>
+                </div>
+            </div>
+            <p style="text-align:center; margin-top:30px; font-size:0.9rem;">Secure payment processing via [Your Payment Processor, e.g., Gumroad, Stripe, Lemon Squeezy].</p>
+        </div>
+    </section>
+
+    <section id="testimonials" class="section-bg">
+        <div class="container">
+            <div class="section-title animate-on-scroll fade-in-up">
+                <h2>Loved by Developers</h2>
+                <p>Don't just take our word for it. Here's what users are saying (placeholders for now!).</p>
+            </div>
+            <div class="testimonial-slider">
+                <div class="testimonial-card animate-on-scroll fade-in-up" style="transition-delay: 0.1s;">
+                    <blockquote>"Hydrogen has become an indispensable part of my daily workflow. The agent mode is a game-changer for quickly scaffolding new projects."</blockquote>
+                    <cite>- Alex R., Full-Stack Developer</cite>
+                </div>
+                <div class="testimonial-card animate-on-scroll fade-in-up" style="transition-delay: 0.2s;">
+                    <blockquote>"Finally, an AI tool that truly understands the terminal and respects my privacy. Running Llama 3 locally with Hydrogen is incredibly fast and powerful."</blockquote>
+                    <cite>- Priya K., DevOps Engineer</cite>
+                </div>
+                 <div class="testimonial-card animate-on-scroll fade-in-up" style="transition-delay: 0.3s;">
+                    <blockquote>"I was skeptical about AI coding assistants, but Hydrogen won me over. It saves me so much time on boilerplate and helps me learn new libraries faster."</blockquote>
+                    <cite>- Ben S., Backend Developer</cite>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq">
+        <div class="container">
+            <div class="section-title animate-on-scroll fade-in-up">
+                <h2>Frequently Asked Questions</h2>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item animate-on-scroll fade-in-up">
+                    <div class="faq-question">What operating systems does Hydrogen support?</div>
+                    <div class="faq-answer"><p>Hydrogen is designed to run in any modern terminal environment on macOS, Linux, and Windows (via WSL or native terminals that support ANSI escape codes).</p></div>
+                </div>
+                <div class="faq-item animate-on-scroll fade-in-up" style="transition-delay: 0.1s;">
+                    <div class="faq-question">What Ollama models are recommended?</div>
+                    <div class="faq-answer"><p>Hydrogen works well with a variety of models. For a good balance of speed and capability, models like Phi-3 Medium, Llama 3 8B Instruct, or Mistral 7B Instruct are excellent choices. Larger models can provide more nuanced responses but require more resources.</p></div>
+                </div>
+                <div class="faq-item animate-on-scroll fade-in-up" style="transition-delay: 0.2s;">
+                    <div class="faq-question">Is my code sent to any external servers?</div>
+                    <div class="faq-answer"><p>No. When using Hydrogen with Ollama, all AI processing happens locally on your machine. Your code and data remain private.</p></div>
+                </div>
+                <div class="faq-item animate-on-scroll fade-in-up" style="transition-delay: 0.3s;">
+                    <div class="faq-question">What if I buy the Ignition License and want updates later?</div>
+                    <div class="faq-answer"><p>The Ignition License grants you access to the version of Hydrogen available at the time of purchase. To receive ongoing updates and new features, you would need to purchase a new Ignition License for a future major version or subscribe to the Fusion plan.</p></div>
+                </div>
+                 <div class="faq-item animate-on-scroll fade-in-up" style="transition-delay: 0.4s;">
+                    <div class="faq-question">Can I get a refund?</div>
+                    <div class="faq-answer"><p>(Your refund policy here - e.g., "We offer a 14-day money-back guarantee if Hydrogen doesn't meet your expectations. Please contact support.")</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <a href="#hero" class="logo">Hydrogen</a>
+            <p>&copy; <span id="currentYear"></span> Your Name/Company Name. All Rights Reserved.</p>
+            <div class="footer-links">
+                <a href="#">Terms of Service</a> |
+                <a href="#">Privacy Policy</a> |
+                <a href="mailto:your-support-email@example.com">Contact Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Smooth Scrolling & Active Nav Link (same as before)
+        const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+        navLinks.forEach(link => { /* ... existing smooth scroll ... */ });
+        const sections = document.querySelectorAll('section[id], header[id]');
+        window.addEventListener('scroll', () => { /* ... existing active link on scroll ... */ });
+
+        // Scroll-triggered Animations (same as before)
+        const animatedElements = document.querySelectorAll('.animate-on-scroll');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('is-visible');
+            });
+        }, { threshold: 0.1 });
+        animatedElements.forEach(el => observer.observe(el));
+
+        // FAQ Accordion
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+            question.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                faqItems.forEach(i => i.classList.remove('active')); // Close others
+                if (!isActive) item.classList.add('active');
+            });
+        });
+
+        // Enhanced Terminal Typing Effect
+        const terminalOutput = document.getElementById('terminal-output');
+        const lines = [
+            { text: '$ hydrogen --mode agent --model llama3:8b-instruct-q5_K_M', type: 'command', prompt: true},
+            { text: 'Ollama connection successful. Model: llama3:8b-instruct-q5_K_M', type: 'output-hydrogen', delay: 300 },
+            { text: 'Hydrogen vX.Y.Z is ready! Agent mode active.', type: 'output-hydrogen', delay: 300 },
+            { text: '[agent] ~/my-legacy-project > ', type: 'prompt-only', hold: true, delay: 800 },
+            { text: '/cat utils/old_string_parser.py', type: 'command', prompt: false, clearHold: true, delay: 1000 },
+            { text: '\nHydrogen: Displaying `utils/old_string_parser.py`:', type: 'output-hydrogen', delay: 500},
+            { text: '```python\n# utils/old_string_parser.py\ndef parse_user_data(data_string):\n    parts = data_string.split(\';\')\n    user_info = {}\n    if len(parts) >= 2:\n        user_info[\'name\'] = parts[0].strip()\n        user_info[\'email\'] = parts[1].strip()\n    if len(parts) >= 3 and parts[2].strip().isdigit():\n        user_info[\'age\'] = int(parts[2].strip())\n    # ... more convoluted logic ...\n    return user_info\n```', type: 'output-code', delay: 1500 },
+            { text: '\n[agent] ~/my-legacy-project > ', type: 'prompt-only', hold: true, delay: 800 },
+            { text: 'Refactor `old_string_parser.py` to use Pydantic for validation and clarity. Add error handling for malformed strings.', type: 'command', prompt: false, clearHold: true, delay: 2000 },
+            { text: '\nHydrogen: Understood. I will refactor `utils/old_string_parser.py` using Pydantic and add robust error handling.\nHere\'s the proposed change:', type: 'output-hydrogen', delay: 1200 },
+            { text: '```diff\n--- a/utils/old_string_parser.py\n+++ b/utils/old_string_parser.py\n@@ -1,12 +1,23 @@\n-# utils/old_string_parser.py\n-def parse_user_data(data_string):\n-    parts = data_string.split(\';\')\n-    user_info = {}\n-    if len(parts) >= 2:\n-        user_info[\'name\'] = parts[0].strip()\n-        user_info[\'email\'] = parts[1].strip()\n-    if len(parts) >= 3 and parts[2].strip().isdigit():\n-        user_info[\'age\'] = int(parts[2].strip())\n-    # ... more convoluted logic ...\n-    return user_info\n+from typing import Optional\n+from pydantic import BaseModel, EmailStr, validator, ValidationError\n+\n+class UserData(BaseModel):\n+    name: str\n+    email: EmailStr\n+    age: Optional[int] = None\n+\n+def parse_user_data_pydantic(data_string: str) -> Optional[UserData]:\n+    parts = [p.strip() for p in data_string.split(\';\')]\n+    if len(parts) < 2:\n+        print(f"Error: Malformed string - expected at least 2 parts: {data_string}")\n+        return None\n+    try:\n+        data_dict = {\n+            "name": parts[0],\n+            "email": parts[1],\n+            "age": int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else None\n+        }\n+        return UserData(**data_dict)\n+    except ValidationError as e:\n+        print(f"Validation Error: {e} for input: {data_string}")\n+        return None\n+    except Exception as e:\n+        print(f"Unexpected error parsing: {e} for input: {data_string}")\n+        return None\n```', type: 'output-diff', delay: 3000 },
+            { text: '\nHydrogen detected possible actions:\n1. Modify file: utils/old_string_parser.py (apply diff)\n2. Create file: requirements.txt (add pydantic)', type: 'output-hydrogen', delay: 1000 },
+            { text: 'Proceed with actions? (y/n/select number): ', type: 'prompt-only', hold: true, delay: 500},
+            { text: 'y', type: 'command', prompt: false, clearHold: true, delay: 800},
+            { text: '\nExecuting all suggested actions...\n--- Action Complete: File utils/old_string_parser.py modified.\n--- Action Complete: File requirements.txt created/updated with pydantic.', type: 'output-hydrogen success-text', delay: 1000 }, // Simplified success
+            { text: '[agent] ~/my-legacy-project > ', type: 'prompt-only', hold: true, delay: 500},
+        ];
+        // ... rest of the terminal typing logic (typeChar function) ...
+        // The typeChar function from the previous example can be reused,
+        // just ensure it handles the new 'output-diff' type and its sub-classes like 'diff-add', 'diff-remove'.
+        // For simplicity, I'll just make 'output-diff' behave like 'output-code' for now.
+        // In a real scenario, you'd add specific styling for diff lines.
+
+        let lineIndex = 0;
+        let charIndex = 0;
+        let currentLineElement = null;
+        let promptText = '';
+        let cursorHold = false;
+
+        function typeChar() {
+            if (lineIndex >= lines.length) {
+                if(cursorHold && currentLineElement && !currentLineElement.querySelector('.typed-cursor')) {
+                    const cursorSpan = document.createElement('span');
+                    cursorSpan.className = 'typed-cursor';
+                    currentLineElement.appendChild(cursorSpan);
+                }
+                return;
+            }
+            const currentLineData = lines[lineIndex];
+            if (!currentLineElement) {
+                currentLineElement = document.createElement('span');
+                currentLineElement.className = 'terminal-line';
+                terminalOutput.appendChild(currentLineElement);
+                if (currentLineData.prompt || currentLineData.type === 'prompt-only') {
+                    const promptSpan = document.createElement('span');
+                    promptSpan.className = 'prompt';
+                    promptText = currentLineData.text.includes('>') ? currentLineData.text.split('>')[0] + '> ' : '[agent] unknown > ';
+                    if (currentLineData.type === 'prompt-only') promptText = currentLineData.text;
+                    else promptText = currentLineData.text.substring(0, currentLineData.text.indexOf('>') + 2);
+
+                    promptSpan.textContent = promptText;
+                    currentLineElement.appendChild(promptSpan);
+                }
+            }
+
+            const textToType = (currentLineData.type === 'command' && currentLineData.prompt) ? currentLineData.text.substring(promptText.length) : currentLineData.text;
+
+            if (charIndex < textToType.length) {
+                let charSpan = document.createElement('span');
+                let currentTextContent = textToType[charIndex];
+
+                // Handle diff lines
+                if (currentLineData.type === 'output-diff') {
+                    if (textToType.substring(charIndex).startsWith('+++ ') || textToType.substring(charIndex).startsWith('--- ') || textToType.substring(charIndex).startsWith('@@ ')) {
+                        charSpan.className = 'output-comment'; // Diff header lines
+                    } else if (textToType[charIndex] === '+' && (charIndex === 0 || textToType[charIndex-1] === '\n')) {
+                        charSpan.className = 'diff-add';
+                    } else if (textToType[charIndex] === '-' && (charIndex === 0 || textToType[charIndex-1] === '\n')) {
+                        charSpan.className = 'diff-remove';
+                    } else {
+                         charSpan.className = 'output-code'; // Default for diff content
+                    }
+                } else if (currentLineData.type === 'command') {
+                    charSpan.className = 'command';
+                } else if (currentLineData.type === 'output-hydrogen') {
+                    charSpan.className = 'output-hydrogen';
+                } else if (currentLineData.type === 'output-hydrogen success-text') {
+                    charSpan.className = 'output-hydrogen';
+                    charSpan.style.color = 'var(--success-color)';
+                } else if (currentLineData.type === 'output-code') {
+                     // Basic syntax highlighting for demo
+                    let part = textToType.substring(charIndex);
+                    if (part.match(/^```(python|html|css|javascript)?\n/)) charSpan.className = 'output-comment';
+                    else if (part.match(/^#.*$/m) || part.match(/^\/\*.*?\*\/|^\/\/.*$/m)) charSpan.className = 'output-comment';
+                    else if (part.match(/^(class|def|return|from|import|async|await|if|else|elif|for|while|try|except|finally|with|as|Optional|BaseModel|EmailStr|validator|ValidationError)\b/)) charSpan.className = 'output-keyword';
+                    else if (part.match(/^(".*?"|'.*?')/)) charSpan.className = 'output-string';
+                    else charSpan.className = 'output-code';
+                } else {
+                    charSpan.className = currentLineData.type || 'command'; // Fallback
+                }
+
+                charSpan.textContent = currentTextContent;
+                currentLineElement.appendChild(charSpan);
+                charIndex++;
+                setTimeout(typeChar, currentLineData.type === 'command' && !currentLineData.prompt ? 40 : 15);
+            } else {
+                if (currentLineData.hold) {
+                    cursorHold = true;
+                    if (!currentLineElement.querySelector('.typed-cursor')) {
+                        const cursorSpan = document.createElement('span');
+                        cursorSpan.className = 'typed-cursor';
+                        currentLineElement.appendChild(cursorSpan);
+                    }
+                }
+                if(currentLineData.clearHold) {
+                    cursorHold = false;
+                    const existingCursor = currentLineElement.querySelector('.typed-cursor');
+                    if(existingCursor) existingCursor.remove();
+                    if(currentLineData.type === 'command' && !currentLineData.prompt && lineIndex < lines.length -1 && lines[lineIndex+1].type !== 'prompt-only'){
+                        terminalOutput.appendChild(document.createElement('br'));
+                    }
+                }
+
+                lineIndex++;
+                charIndex = 0;
+                currentLineElement = null; // Force creation of new line span
+                promptText = '';
+                const delay = currentLineData.delay || (currentLineData.type === 'prompt-only' && !currentLineData.text.trim() ? 0 : 70);
+                setTimeout(typeChar, delay);
+            }
+            if (terminalOutput.parentNode) { // Check if parentNode exists
+                 terminalOutput.parentNode.scrollTop = terminalOutput.parentNode.scrollHeight;
+            }
+        }
+        setTimeout(typeChar, 500);
+
+
+        // Set current year in footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    });
+    </script>
+
+</body>
+</html>
